@@ -1,0 +1,10 @@
+/hindsight-tui
+/dist/
+/coverage.out
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+.vscode-test/
+*.swp
+*.swo

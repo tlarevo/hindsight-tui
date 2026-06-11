@@ -1,0 +1,6 @@
+backend: embed
+api_url: http://127.0.0.1:8888
+default_bank: default
+theme: auto
+compact: false
+timeout_ms: 30000
