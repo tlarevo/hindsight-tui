@@ -146,6 +146,9 @@ func (t *pagedTable) CancelLoad() {
 // so input values persist across swaps (used by Traces' per-tab filter sets).
 func (t *pagedTable) SetInputs(inputs []pagedInput) {
 	t.inputs = inputs
+	if t.focus >= len(inputs) {
+		t.focus = ptFocusTable
+	}
 }
 
 // SetPage installs the rows and total for the freshly loaded page.

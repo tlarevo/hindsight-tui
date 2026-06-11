@@ -317,10 +317,12 @@ func (v *ExplorerView) usesTable() bool {
 
 func (v *ExplorerView) prevTab() {
 	v.tab = explorerTab((int(v.tab) + 4) % 5)
+	v.pt.ResetOffset()
 }
 
 func (v *ExplorerView) nextTab() {
 	v.tab = explorerTab((int(v.tab) + 1) % 5)
+	v.pt.ResetOffset()
 }
 
 func (v *ExplorerView) selectedJSON() string {

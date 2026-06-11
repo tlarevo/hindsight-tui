@@ -367,11 +367,12 @@ func (v *ReflectView) submit() tea.Cmd {
 }
 
 func (v *ReflectView) runReflect(bank string, request domain.ReflectRequest) tea.Cmd {
-	copy := request
+	client := v.shared.Client
+	timeout := sharedTimeout(v.shared)
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), sharedTimeout(v.shared))
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
-		response, err := v.shared.Client.Reflect(ctx, bank, copy)
+		response, err := client.Reflect(ctx, bank, request)
 		return reflectSubmittedMsg{response: response, err: err}
 	}
 }

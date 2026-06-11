@@ -362,10 +362,12 @@ func (v *RetainView) submit() tea.Cmd {
 		Async: v.async,
 	}
 
+	client := v.shared.Client
+	timeout := sharedTimeout(v.shared)
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), sharedTimeout(v.shared))
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
-		response, err := v.shared.Client.Retain(ctx, bank, request)
+		response, err := client.Retain(ctx, bank, request)
 		return retainSubmittedMsg{response: response, err: err}
 	}
 }

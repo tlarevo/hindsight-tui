@@ -329,11 +329,12 @@ func (v *RecallView) submit() tea.Cmd {
 }
 
 func (v *RecallView) runRecall(bank string, request domain.RecallRequest) tea.Cmd {
-	copy := request
+	client := v.shared.Client
+	timeout := sharedTimeout(v.shared)
 	return func() tea.Msg {
-		ctx, cancel := context.WithTimeout(context.Background(), sharedTimeout(v.shared))
+		ctx, cancel := context.WithTimeout(context.Background(), timeout)
 		defer cancel()
-		response, err := v.shared.Client.Recall(ctx, bank, copy)
+		response, err := client.Recall(ctx, bank, request)
 		return recallSubmittedMsg{response: response, err: err}
 	}
 }
