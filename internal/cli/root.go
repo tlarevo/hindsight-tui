@@ -6,6 +6,8 @@ import (
 	"hindsight-tui/internal/app"
 )
 
+var version = "dev"
+
 func newRootCmd(run func(app.Options) error) *cobra.Command {
 	var configPath string
 	var backend string
@@ -16,8 +18,9 @@ func newRootCmd(run func(app.Options) error) *cobra.Command {
 	var setup bool
 
 	cmd := &cobra.Command{
-		Use:   "hindsight-tui",
-		Short: "Hindsight terminal UI",
+		Use:     "hindsight-tui",
+		Short:   "Hindsight terminal UI",
+		Version: version,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if demo {
 				backend = "demo"

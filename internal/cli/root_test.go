@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"bytes"
 	"errors"
+	"strings"
 	"testing"
 
 	"hindsight-tui/internal/app"
@@ -75,5 +77,26 @@ func TestRunErrorPropagates(t *testing.T) {
 	}
 	if !errors.Is(err, sentinel) {
 		t.Errorf("error = %v, want errors.Is(err, sentinel)", err)
+	}
+}
+
+func TestVersionFlagPrintsBuildVersion(t *testing.T) {
+	t.Parallel()
+	var out bytes.Buffer
+	called := false
+	cmd := newRootCmd(func(o app.Options) error {
+		called = true
+		return nil
+	})
+	cmd.SetOut(&out)
+	cmd.SetArgs([]string{"--version"})
+	if err := cmd.Execute(); err != nil {
+		t.Fatalf("Execute() error: %v", err)
+	}
+	if called {
+		t.Fatal("run callback called for --version")
+	}
+	if !strings.Contains(out.String(), version) {
+		t.Fatalf("--version output %q does not contain %q", out.String(), version)
 	}
 }

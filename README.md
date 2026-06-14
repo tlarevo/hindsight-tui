@@ -10,15 +10,18 @@ Default backend: `hindsight-embed`.
 
 The Hindsight embed docs describe it as a local daemon for development, prototyping, and single-user use. It auto-starts a daemon, uses embedded pg0 storage, and binds `127.0.0.1:8888`. `hindsight-tui` keeps HTTP mode first-class for bare-metal `hindsight-api`, but defaults to the local-first path.
 
-## Prerequisites
+## Install
+
+```sh
+brew install tlarevo/tap/hindsight-tui
+hindsight-tui --setup
+```
+
+The setup wizard can install and manage `hindsight-embed` for local embed mode. If `uv` is unavailable, the wizard downloads an app-managed `uv` into the user data directory and installs `hindsight-embed` there.
+
+## Prerequisites for source builds
 
 - Go
-- One Hindsight backend:
-  - Embed:
-    - `uvx hindsight-embed@latest configure`
-    - or `pipx install hindsight-embed && hindsight-embed configure`
-  - Bare metal API:
-    - `pip install hindsight-api && hindsight-api`
 
 ## LLM environment variables
 
@@ -37,11 +40,12 @@ The Hindsight embed docs describe it as a local daemon for development, prototyp
 ## Run
 
 ```sh
-go run ./cmd/hindsight-tui
-go run ./cmd/hindsight-tui --demo
-go run ./cmd/hindsight-tui --backend http --api-url http://localhost:8888
-go run ./cmd/hindsight-tui --doctor
-go run ./cmd/hindsight-tui --auth-token "$HINDSIGHT_TUI_AUTH_TOKEN"
+hindsight-tui
+hindsight-tui --setup
+hindsight-tui --demo
+hindsight-tui --backend http --api-url http://localhost:8888
+hindsight-tui --doctor
+hindsight-tui --auth-token "$HINDSIGHT_TUI_AUTH_TOKEN"
 ```
 
 ## Configuration
@@ -66,13 +70,13 @@ The TUI stores backend selection, API URL, default bank, theme, compact mode, an
 
 ### `hindsight-embed` command not found
 
-Install and configure it:
+Run the setup wizard and choose the embed backend:
 
 ```sh
-uvx hindsight-embed@latest configure
-pipx install hindsight-embed
-hindsight-embed configure
+hindsight-tui --setup
 ```
+
+The wizard installs `hindsight-embed` with system `uv` when available, or with app-managed `uv` otherwise.
 
 ### API is not running
 
