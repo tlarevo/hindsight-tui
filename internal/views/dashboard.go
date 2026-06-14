@@ -8,12 +8,10 @@ import (
 
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
-	gloss "charm.land/lipgloss/v2"
-
 	"hindsight-tui/internal/domain"
 	apperrors "hindsight-tui/internal/errors"
 	"hindsight-tui/internal/hindsight"
-	"hindsight-tui/internal/state"
+	"hindsight-tui/internal/theme"
 	"hindsight-tui/internal/ui"
 )
 
@@ -42,9 +40,6 @@ func valueOrDefault(value *string, fallback string) string {
 	return *value
 }
 
-func routeCmd(route state.Route) tea.Cmd {
-	return func() tea.Msg { return NavigateMsg{Route: route} }
-}
 
 func listItemsFromBanks(banks []domain.BankSummary) []simpleListItem {
 	items := make([]simpleListItem, 0, len(banks))
@@ -178,35 +173,38 @@ func moveIndex(current int, delta int, length int) int {
 	return next
 }
 
-func renderMenu(title string, items []simpleListItem, selected int, focused bool) string {
+func renderMenu(p theme.Palette, title string, items []simpleListItem, selected int, focused bool) string {
 	lines := make([]string, 0, len(items))
 	for i, item := range items {
 		marker := "  "
 		if i == selected {
 			if focused {
-				marker = "> "
+				marker = p.Primary.Render("▸ ")
 			} else {
-				marker = "* "
+				marker = p.Accent.Render("▸ ")
 			}
 		}
-		line := marker + item.title
+		titleText := item.title
+		if i == selected && focused {
+			titleText = p.Primary.Render(item.title)
+		}
+		line := marker + titleText
 		if item.desc != "" {
-			line += " — " + item.desc
+			line += p.Muted.Render(" — ") + p.Muted.Render(item.desc)
 		}
 		lines = append(lines, line)
 	}
 	if len(lines) == 0 {
-		lines = append(lines, "No items")
+		lines = append(lines, p.Muted.Render("No items"))
 	}
-	return ui.Panel(title, strings.Join(lines, "\n"), 0)
+	return p.Panel(title, strings.Join(lines, "\n"), 0)
 }
 
-func renderField(label string, value string, focused bool) string {
-	marker := "  "
+func renderField(p theme.Palette, label string, value string, focused bool) string {
 	if focused {
-		marker = "> "
+		return fmt.Sprintf("%s%s: %s", p.FocusedLabel.Render("▸ "), p.FocusedLabel.Render(label), value)
 	}
-	return fmt.Sprintf("%s%s: %s", marker, label, value)
+	return fmt.Sprintf("%s: %s", p.FormLabel.Render(label), p.Muted.Render(value))
 }
 
 type dashboardLoadMsg struct {
@@ -227,8 +225,6 @@ type DashboardView struct {
 	shared              *Shared
 	width               int
 	height              int
-	quickActions        []simpleListItem
-	quickActionIndex    int
 	loading             bool
 	err                 error
 	health              *domain.HealthStatus
@@ -245,24 +241,14 @@ type DashboardView struct {
 
 func NewDashboardView(shared *Shared) *DashboardView {
 	return &DashboardView{
-		shared: shared,
-		quickActions: []simpleListItem{
-			{title: "Create/select bank", desc: "Open Banks", value: fmt.Sprintf("%d", state.RouteBanks)},
-			{title: "Retain memory", desc: "Open Retain", value: fmt.Sprintf("%d", state.RouteRetain)},
-			{title: "Recall memory", desc: "Open Recall", value: fmt.Sprintf("%d", state.RouteRecall)},
-			{title: "Reflect", desc: "Open Reflect", value: fmt.Sprintf("%d", state.RouteReflect)},
-			{title: "Explorer", desc: "Open Explorer", value: fmt.Sprintf("%d", state.RouteExplorer)},
-			{title: "Traces", desc: "Open Traces", value: fmt.Sprintf("%d", state.RouteTraces)},
-			{title: "Config", desc: "Open Config", value: fmt.Sprintf("%d", state.RouteConfig)},
-			{title: "Help", desc: "Open Help", value: fmt.Sprintf("%d", state.RouteHelp)},
-		},
-		health:     shared.Health,
-		version:    shared.Version,
-		activeBank: shared.State.ActiveBank,
+		shared:      shared,
+		health:      shared.Health,
+		version:     shared.Version,
+		activeBank:  shared.State.ActiveBank,
 	}
 }
-
 func (v *DashboardView) Title() string { return "Dashboard" }
+
 
 func (v *DashboardView) TextEntryFocused() bool {
 	return false
@@ -363,35 +349,6 @@ func (v *DashboardView) Update(msg tea.Msg) (View, tea.Cmd) {
 			v.err = nil
 			return v, loadDashboardCmd(v.shared)
 		}
-		if key.Matches(typed, v.shared.KeyMap.Down) {
-			v.quickActionIndex = moveIndex(v.quickActionIndex, 1, len(v.quickActions))
-			return v, nil
-		}
-		if key.Matches(typed, v.shared.KeyMap.Up) {
-			v.quickActionIndex = moveIndex(v.quickActionIndex, -1, len(v.quickActions))
-			return v, nil
-		}
-		if key.Matches(typed, v.shared.KeyMap.Select) {
-			raw := v.quickActions[v.quickActionIndex].value
-			switch raw {
-			case fmt.Sprintf("%d", state.RouteBanks):
-				return v, routeCmd(state.RouteBanks)
-			case fmt.Sprintf("%d", state.RouteRetain):
-				return v, routeCmd(state.RouteRetain)
-			case fmt.Sprintf("%d", state.RouteRecall):
-				return v, routeCmd(state.RouteRecall)
-			case fmt.Sprintf("%d", state.RouteReflect):
-				return v, routeCmd(state.RouteReflect)
-			case fmt.Sprintf("%d", state.RouteExplorer):
-				return v, routeCmd(state.RouteExplorer)
-			case fmt.Sprintf("%d", state.RouteTraces):
-				return v, routeCmd(state.RouteTraces)
-			case fmt.Sprintf("%d", state.RouteConfig):
-				return v, routeCmd(state.RouteConfig)
-			case fmt.Sprintf("%d", state.RouteHelp):
-				return v, routeCmd(state.RouteHelp)
-			}
-		}
 		return v, nil
 	default:
 		return v, nil
@@ -404,81 +361,69 @@ func (v *DashboardView) View(width, height int) string {
 	if width <= 0 || height <= 0 {
 		return ""
 	}
+	p := v.shared.Palette
+	contentWidth := max(20, width-2)
+
+	// Status section with semantic coloring
 	statusLines := []string{
-		fmt.Sprintf("Backend: %s", v.shared.Config.Backend),
-		fmt.Sprintf("API URL: %s", v.shared.Config.APIURL),
-		fmt.Sprintf("Active bank: %s", blankFallback(v.activeBank, v.shared.Config.DefaultBank)),
-		fmt.Sprintf("Bank count: %d", len(v.banks)),
+		p.StatusLabel("Backend", string(v.shared.Config.Backend), "neutral"),
+		p.StatusLabel("API URL", v.shared.Config.APIURL, ""),
+		p.StatusLabel("Active bank", blankFallback(v.activeBank, v.shared.Config.DefaultBank), "neutral"),
+		p.StatusLabel("Bank count", fmt.Sprintf("%d", len(v.banks)), ""),
 	}
 	if v.health != nil {
-		status := "degraded"
-		if v.health.OK {
-			status = "running"
+		healthKind := "good"
+		if !v.health.OK {
+			healthKind = "bad"
 		}
-		statusLines = append(statusLines, fmt.Sprintf("Health: %s", status))
+		statusLines = append(statusLines, p.StatusLabelWithIcon("Health", map[bool]string{true: "running", false: "degraded"}[v.health.OK], healthKind))
 		if strings.TrimSpace(v.health.Detail) != "" {
-			statusLines = append(statusLines, fmt.Sprintf("Health detail: %s", v.health.Detail))
+			statusLines = append(statusLines, p.StatusLabel("Health detail", v.health.Detail, healthKind))
 		}
 	}
 	if v.version != nil {
-		statusLines = append(statusLines, fmt.Sprintf("API version: %s", blankFallback(v.version.APIVersion, "unavailable")))
+		statusLines = append(statusLines, p.StatusLabel("API version", blankFallback(v.version.APIVersion, "unavailable"), "good"))
 		features := sortedEnabledFeatures(v.version)
 		if len(features) == 0 {
-			statusLines = append(statusLines, "Feature flags: none enabled")
+			statusLines = append(statusLines, p.Muted.Render("Feature flags: none enabled"))
 		} else {
-			statusLines = append(statusLines, "Feature flags: "+strings.Join(features, ", "))
+			statusLines = append(statusLines, p.StatusLabel("Feature flags", strings.Join(features, ", "), "neutral"))
 		}
 	} else {
-		statusLines = append(statusLines, "API version: unavailable", "Feature flags: unavailable")
+		statusLines = append(statusLines, p.StatusLabel("API version", "unavailable", "bad"), p.Muted.Render("Feature flags: unavailable"))
 	}
 
-	statsBody := "unavailable"
+	statsBody := p.Muted.Render("unavailable")
 	if v.statsAvailable {
 		statsBody = ui.PrettyJSON(v.stats)
 	} else if v.statsErr != nil {
-		statsBody = apperrors.Friendly(v.statsErr).Title
+		statsBody = p.Error.Render(apperrors.Friendly(v.statsErr).Title)
 	}
-	operationsBody := "unavailable"
+	operationsBody := p.Muted.Render("unavailable")
 	if v.operationsAvailable {
 		lines := make([]string, 0, len(v.operations))
 		for _, row := range v.operations {
 			lines = append(lines, operationSummary(row))
 		}
 		if len(lines) == 0 {
-			operationsBody = "No recent operations"
+			operationsBody = p.Muted.Render("No recent operations")
 		} else {
 			operationsBody = strings.Join(lines, "\n")
 		}
 	} else if v.operationsErr != nil {
-		operationsBody = apperrors.Friendly(v.operationsErr).Title
+		operationsBody = p.Error.Render(apperrors.Friendly(v.operationsErr).Title)
 	}
 
-	hints := []string{
-		"uvx hindsight-embed@latest configure",
-		"pipx install hindsight-embed",
-		"hindsight-embed configure",
-		"pip install hindsight-api",
-		"hindsight-api",
-	}
-	if v.health != nil && !v.health.OK && strings.Contains(v.health.Detail, hindsight.EmbedInstallHint()) {
-		hints = append([]string{hindsight.EmbedInstallHint(), "Open Config to switch backend or update API URL."}, hints...)
-	}
-
-	left := ui.Lines(
-		ui.Panel("Status", strings.Join(statusLines, "\n"), 0),
-		ui.Panel("Current bank stats", statsBody, 0),
-		ui.Panel("Recent operations", operationsBody, 0),
+	panels := ui.Lines(
+		p.Panel("Status", strings.Join(statusLines, "\n"), contentWidth),
+		p.Panel("Current bank stats", statsBody, contentWidth),
+		p.Panel("Recent operations", operationsBody, contentWidth),
 	)
-	right := ui.Lines(
-		renderMenu("Quick actions", v.quickActions, v.quickActionIndex, true),
-		ui.Panel("Bootstrap hints", strings.Join(hints, "\n"), 0),
-	)
-	banner := gloss.NewStyle().Bold(true).Render("Dashboard")
 	if v.loading {
-		banner += "\nLoading dashboard..."
+		return ui.Lines(p.Spinner.Render("⟳")+" "+p.Primary.Render("Loading dashboard..."), panels)
 	}
 	if v.err != nil {
-		banner += "\n" + renderFriendlyError(v.err)
+		return ui.Lines(renderFriendlyError(v.err), panels)
 	}
-	return ui.Lines(banner, ui.TwoColumn(left, right, max(width-2, 20)))
+	return panels
 }

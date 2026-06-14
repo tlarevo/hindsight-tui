@@ -200,33 +200,34 @@ func (v *RecallView) Update(msg tea.Msg) (View, tea.Cmd) {
 	}
 	return v, tea.Batch(cmds...)
 }
-
 func (v *RecallView) View(width, height int) string {
+	p := v.shared.Palette
+	r := func(label, body string, focused bool) string { return renderFocusedInput(p, label, body, focused) }
 	left := []string{
-		renderFocusedInput("Query", v.query.View(), v.focus == recallFocusQuery),
-		renderFocusedInput("Bank", v.bank.View(), v.focus == recallFocusBank),
-		renderFocusedInput("Budget", v.budget.View(), v.focus == recallFocusBudget),
-		renderFocusedInput("Max tokens", v.maxTokens.View(), v.focus == recallFocusMaxTokens),
-		renderFocusedInput("Types", ui.Lines(
-			renderFocusedInput("world", boolField(v.world), v.focus == recallFocusWorld),
-			renderFocusedInput("experience", boolField(v.experience), v.focus == recallFocusExperience),
-			renderFocusedInput("observation", boolField(v.observation), v.focus == recallFocusObservation),
+		r("Query", v.query.View(), v.focus == recallFocusQuery),
+		r("Bank", v.bank.View(), v.focus == recallFocusBank),
+		r("Budget", v.budget.View(), v.focus == recallFocusBudget),
+		r("Max tokens", v.maxTokens.View(), v.focus == recallFocusMaxTokens),
+		r("Types", ui.Lines(
+			r("world", boolField(v.world), v.focus == recallFocusWorld),
+			r("experience", boolField(v.experience), v.focus == recallFocusExperience),
+			r("observation", boolField(v.observation), v.focus == recallFocusObservation),
 		), false),
 	}
 	if v.showAdvanced {
 		left = append(left,
-			renderFocusedInput("Tags", v.tags.View(), v.focus == recallFocusTags),
-			renderFocusedInput("Tags match", v.tagsMatch.View(), v.focus == recallFocusTagsMatch),
-			renderFocusedInput("Include entities", boolField(v.includeEntities), v.focus == recallFocusIncludeEntities),
-			renderFocusedInput("Include chunks", boolField(v.includeChunks), v.focus == recallFocusIncludeChunks),
-			renderFocusedInput("Include source facts", boolField(v.includeSources), v.focus == recallFocusIncludeSourceFacts),
-			renderFocusedInput("Trace", boolField(v.trace), v.focus == recallFocusTrace),
+			r("Tags", v.tags.View(), v.focus == recallFocusTags),
+			r("Tags match", v.tagsMatch.View(), v.focus == recallFocusTagsMatch),
+			r("Include entities", boolField(v.includeEntities), v.focus == recallFocusIncludeEntities),
+			r("Include chunks", boolField(v.includeChunks), v.focus == recallFocusIncludeChunks),
+			r("Include source facts", boolField(v.includeSources), v.focus == recallFocusIncludeSourceFacts),
+			r("Trace", boolField(v.trace), v.focus == recallFocusTrace),
 		)
 	} else {
-		left = append(left, "Advanced fields hidden. Press a to edit tags, include options, and trace.")
+		left = append(left, p.Muted.Render("Advanced fields hidden. Press a to edit tags, include options, and trace."))
 	}
 	if v.loading {
-		left = append(left, "", v.spin.View()+" Recalling memories…")
+		left = append(left, "", p.Spinner.Render(v.spin.View())+" Recalling memories…")
 	}
 	if v.status != "" {
 		left = append(left, "", v.status)
@@ -245,11 +246,11 @@ func (v *RecallView) View(width, height int) string {
 	v.detail.SetHeight(max(8, height/3))
 
 	right := ui.Lines(
-		renderFocusedInput("Results", v.results.View(), v.focus == recallFocusResults),
+		r("Results", v.results.View(), v.focus == recallFocusResults),
 		"",
-		renderFocusedInput("Detail", v.detail.View(), v.focus == recallFocusDetail),
+		r("Detail", v.detail.View(), v.focus == recallFocusDetail),
 	)
-	return ui.TwoColumn(ui.Panel("Recall", strings.Join(left, "\n\n"), width/2), ui.Panel("Matches", right, width/2), width)
+	return ui.TwoColumn(p.Panel("Recall", strings.Join(left, "\n\n"), width/2), p.Panel("Matches", right, width/2), width)
 }
 
 func (v *RecallView) submit() tea.Cmd {

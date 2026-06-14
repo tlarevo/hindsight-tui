@@ -64,11 +64,42 @@ func DefaultPath() (string, error) {
 	return filepath.Join(configHome, "hindsight-tui", "config.yaml"), nil
 }
 
+func DataPath(elem ...string) (string, error) {
+	dataHome := xdg.DataHome
+	if dataHome == "" {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return "", stderrors.New("xdg data home is empty")
+		}
+		dataHome = filepath.Join(home, ".local", "share")
+	}
+	parts := append([]string{dataHome, "hindsight-tui"}, elem...)
+	return filepath.Join(parts...), nil
+}
+
+func ManagedBinDir() (string, error) {
+	return DataPath("bin")
+}
+
+func ManagedExecutablePath(name string) (string, error) {
+	return DataPath("bin", name)
+}
+
 func ResolvePath(path string) (string, error) {
 	if path != "" {
 		return path, nil
 	}
 	return DefaultPath()
+}
+
+// FileExists reports whether the config file exists on disk.
+func FileExists(path string) bool {
+	resolvedPath, err := ResolvePath(path)
+	if err != nil {
+		return false
+	}
+	_, err = os.Stat(resolvedPath)
+	return err == nil
 }
 
 func Load(path string) (Config, error) {

@@ -34,7 +34,7 @@ func TwoColumn(left, right string, totalWidth int) string {
 		return left + "\n" + right
 	}
 	leftWidth := totalWidth / 2
-	rightWidth := totalWidth - leftWidth - 1
+	rightWidth := totalWidth - leftWidth
 	leftStyle := gloss.NewStyle().Width(leftWidth)
 	rightStyle := gloss.NewStyle().Width(rightWidth)
 	return gloss.JoinHorizontal(gloss.Top, leftStyle.Render(left), rightStyle.Render(right))

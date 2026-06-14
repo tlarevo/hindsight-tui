@@ -225,33 +225,34 @@ func (v *ReflectView) Update(msg tea.Msg) (View, tea.Cmd) {
 	}
 	return v, tea.Batch(cmds...)
 }
-
 func (v *ReflectView) View(width, height int) string {
+	p := v.shared.Palette
+	r := func(label, body string, focused bool) string { return renderFocusedInput(p, label, body, focused) }
 	left := []string{
-		renderFocusedInput("Question", v.question.View(), v.focus == reflectFocusQuestion),
-		renderFocusedInput("Context", v.context.View(), v.focus == reflectFocusContext),
-		renderFocusedInput("Bank", v.bank.View(), v.focus == reflectFocusBank),
-		renderFocusedInput("Budget", v.budget.View(), v.focus == reflectFocusBudget),
-		renderFocusedInput("Max tokens", v.maxTokens.View(), v.focus == reflectFocusMaxTokens),
-		renderFocusedInput("Fact types", ui.Lines(
-			renderFocusedInput("world", boolField(v.factWorld), v.focus == reflectFocusWorld),
-			renderFocusedInput("experience", boolField(v.factExperience), v.focus == reflectFocusExperience),
-			renderFocusedInput("observation", boolField(v.factObservation), v.focus == reflectFocusObservation),
+		r("Question", v.question.View(), v.focus == reflectFocusQuestion),
+		r("Context", v.context.View(), v.focus == reflectFocusContext),
+		r("Bank", v.bank.View(), v.focus == reflectFocusBank),
+		r("Budget", v.budget.View(), v.focus == reflectFocusBudget),
+		r("Max tokens", v.maxTokens.View(), v.focus == reflectFocusMaxTokens),
+		r("Fact types", ui.Lines(
+			r("world", boolField(v.factWorld), v.focus == reflectFocusWorld),
+			r("experience", boolField(v.factExperience), v.focus == reflectFocusExperience),
+			r("observation", boolField(v.factObservation), v.focus == reflectFocusObservation),
 		), false),
 	}
 	if v.showAdvanced {
 		left = append(left,
-			renderFocusedInput("Tags", v.tags.View(), v.focus == reflectFocusTags),
-			renderFocusedInput("Tags match", v.tagsMatch.View(), v.focus == reflectFocusTagsMatch),
-			renderFocusedInput("Include facts", boolField(v.includeFacts), v.focus == reflectFocusIncludeFacts),
-			renderFocusedInput("Include tool calls", boolField(v.includeToolCalls), v.focus == reflectFocusIncludeToolCalls),
-			renderFocusedInput("Exclude mental models", boolField(v.excludeMentalModels), v.focus == reflectFocusExcludeMentalModels),
+			r("Tags", v.tags.View(), v.focus == reflectFocusTags),
+			r("Tags match", v.tagsMatch.View(), v.focus == reflectFocusTagsMatch),
+			r("Include facts", boolField(v.includeFacts), v.focus == reflectFocusIncludeFacts),
+			r("Include tool calls", boolField(v.includeToolCalls), v.focus == reflectFocusIncludeToolCalls),
+			r("Exclude mental models", boolField(v.excludeMentalModels), v.focus == reflectFocusExcludeMentalModels),
 		)
 	} else {
-		left = append(left, "Advanced fields hidden. Press a to edit tags and include flags.")
+		left = append(left, p.Muted.Render("Advanced fields hidden. Press a to edit tags and include flags."))
 	}
 	if v.loading {
-		left = append(left, "", v.spin.View()+" Reflecting…")
+		left = append(left, "", p.Spinner.Render(v.spin.View())+" Reflecting…")
 	}
 	if v.status != "" {
 		left = append(left, "", v.status)
@@ -260,7 +261,7 @@ func (v *ReflectView) View(width, height int) string {
 		left = append(left, "", renderFriendlyError(v.err))
 	}
 	if v.exporting {
-		left = append(left, "", renderFocusedInput("Export path", v.exportPath.View(), v.focus == reflectFocusExportPath))
+		left = append(left, "", r("Export path", v.exportPath.View(), v.focus == reflectFocusExportPath))
 	}
 
 	rightWidth := width/2 - 6
@@ -275,19 +276,19 @@ func (v *ReflectView) View(width, height int) string {
 	actions := []string{}
 	if v.response != nil {
 		actions = append(actions,
-			renderFocusedInput("Retain this reflection", "enter", v.focus == reflectFocusRetainAction),
-			renderFocusedInput("Copy Reflection", "c or enter", v.focus == reflectFocusCopyAction),
+			r("Retain this reflection", p.Primary.Render("enter"), v.focus == reflectFocusRetainAction),
+			r("Copy Reflection", p.Primary.Render("c or enter"), v.focus == reflectFocusCopyAction),
 		)
 	}
 	right := ui.Lines(
-		renderFocusedInput("Response", v.responseViewport.View(), v.focus == reflectFocusResponse),
+		r("Response", v.responseViewport.View(), v.focus == reflectFocusResponse),
 		"",
-		renderFocusedInput("Evidence", v.evidenceViewport.View(), v.focus == reflectFocusEvidence),
+		r("Evidence", v.evidenceViewport.View(), v.focus == reflectFocusEvidence),
 	)
 	if len(actions) > 0 {
 		right = ui.Lines(right, "", strings.Join(actions, "\n\n"))
 	}
-	return ui.TwoColumn(ui.Panel("Reflect", strings.Join(left, "\n\n"), width/2), ui.Panel("Response", right, width/2), width)
+	return ui.TwoColumn(p.Panel("Reflect", strings.Join(left, "\n\n"), width/2), p.Panel("Response", right, width/2), width)
 }
 
 func (v *ReflectView) submit() tea.Cmd {

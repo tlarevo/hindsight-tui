@@ -378,6 +378,7 @@ func (v *ConfigView) View(width, height int) string {
 	if width <= 0 || height <= 0 {
 		return ""
 	}
+	p := v.shared.Palette
 	formLines := make([]string, 0, len(v.fields)+2)
 	for i, field := range v.fields {
 		focused := v.pane == configPaneForm && i == v.fieldIndex
@@ -385,16 +386,16 @@ func (v *ConfigView) View(width, height int) string {
 		if focused && v.editor.active {
 			value = v.editor.View()
 		}
-		formLines = append(formLines, renderField(field.label, value, focused))
+		formLines = append(formLines, renderField(p, field.label, value, focused))
 	}
 	if v.loading {
-		formLines = append(formLines, "", "Working...")
+		formLines = append(formLines, "", p.Spinner.Render("⟳")+" Working...")
 	}
-	left := ui.Panel("Config", strings.Join(formLines, "\n"), 0)
+	left := p.Panel("Config", strings.Join(formLines, "\n"), 0)
 	right := ui.Lines(
-		renderMenu("Actions", v.actions, v.actionIndex, v.pane == configPaneActions),
-		ui.Panel("Status + redacted env", clippedLines(v.outputText(), v.outputOffset, max(height/2, 8)), 0),
+		renderMenu(p, "Actions", v.actions, v.actionIndex, v.pane == configPaneActions),
+		p.Panel("Status + redacted env", clippedLines(v.outputText(), v.outputOffset, max(height/2, 8)), 0),
 	)
-	footer := fmt.Sprintf("pane=%d | ctrl+s save | tab switch pane | enter edit field / run action | esc cancel edit | backend=%s", v.pane, v.shared.Config.Backend)
-	return ui.Lines("Config", ui.TwoColumn(left, right, max(width-2, 20)), footer)
+	footer := p.Footer.Render(fmt.Sprintf("ctrl+s save · tab switch pane · enter edit/run · esc cancel · backend=%s", v.shared.Config.Backend))
+	return ui.Lines(p.Primary.Render("Config"), ui.TwoColumn(left, right, max(width-2, 20)), footer)
 }

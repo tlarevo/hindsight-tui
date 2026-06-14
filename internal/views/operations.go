@@ -102,43 +102,44 @@ func (v *OperationsView) View(width, height int) string {
 	if width <= 0 || height <= 0 {
 		return ""
 	}
+	p := v.shared.Palette
 
-	status := fmt.Sprintf("Bank: %s | %s", currentViewBank(v.shared), v.pt.StatusLine())
+	status := p.StatusLabel("Bank", currentViewBank(v.shared), "neutral") + p.Muted.Render(" │ ") + p.Muted.Render(v.pt.StatusLine())
 	if v.pt.loading {
-		status = fmt.Sprintf("Bank: %s | %s", currentViewBank(v.shared), v.pt.LoadingView())
+		status = p.StatusLabel("Bank", currentViewBank(v.shared), "neutral") + p.Muted.Render(" │ ") + p.Spinner.Render(v.pt.LoadingView())
 	}
 	if v.notice != "" {
-		status += " | " + v.notice
+		status += p.Muted.Render(" │ ") + p.Warning.Render(v.notice)
 	}
 	filters := strings.Join([]string{
-		focusedInputView("status", v.pt.inputs[0].input, v.pt.focus == 0),
-		focusedInputView("type", v.pt.inputs[1].input, v.pt.focus == 1),
+		focusedInputView(p, "status", v.pt.inputs[0].input, v.pt.focus == 0),
+		focusedInputView(p, "type", v.pt.inputs[1].input, v.pt.focus == 1),
 	}, "  ")
 
 	contentWidth := max(20, width-2)
 	leftWidth := max(20, contentWidth/2)
 	rightWidth := contentWidth - leftWidth
 	bodyHeight := max(4, height-8)
-	v.pt.table.SetWidth(leftWidth - 2)
+	v.pt.table.SetWidth(leftWidth - 4)
 	v.pt.table.SetHeight(bodyHeight)
-	v.pt.detail.SetWidth(max(10, rightWidth-2))
+	v.pt.detail.SetWidth(max(10, rightWidth-4))
 	v.pt.detail.SetHeight(bodyHeight)
 
 	leftBody := v.pt.table.View()
 	if v.pt.rowCount() == 0 && v.err == nil && !v.pt.loading {
-		leftBody = "No operations."
+		leftBody = p.Muted.Render("No operations.")
 	}
 	if v.err != nil {
 		leftBody = renderFriendlyError(v.err)
 	}
 
 	content := ui.TwoColumn(
-		ui.Panel("Operations", leftBody, leftWidth),
-		ui.Panel("Detail", v.pt.detail.View(), rightWidth),
+		p.Panel("Operations", leftBody, leftWidth),
+		p.Panel("Detail", v.pt.detail.View(), rightWidth),
 		contentWidth,
 	)
-	footer := "[ ] page • / status filter • tab switch pane • enter apply • c copy • ctrl+r refresh"
-	return ui.Lines(renderTabs(width, 0, []string{"Operations"}), filters, status, content, footer)
+	footer := p.Footer.Render("[ ] page • / status filter • tab switch pane • enter apply • c copy • ctrl+r refresh")
+	return ui.Lines(renderTabs(p, width, 0, []string{"Operations"}), filters, status, content, footer)
 }
 
 func (v *OperationsView) Title() string {

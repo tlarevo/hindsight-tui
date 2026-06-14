@@ -13,6 +13,7 @@ import (
 
 	"hindsight-tui/internal/domain"
 	"hindsight-tui/internal/state"
+	"hindsight-tui/internal/theme"
 	"hindsight-tui/internal/ui"
 )
 
@@ -172,25 +173,27 @@ func (v *RetainView) Update(msg tea.Msg) (View, tea.Cmd) {
 }
 
 func (v *RetainView) View(width, height int) string {
+	p := v.shared.Palette
+	r := func(label, body string, focused bool) string { return renderFocusedInput(p, label, body, focused) }
 	body := []string{
-		renderFocusedInput("Bank", v.bank.View(), v.focus == retainFocusBank),
-		renderFocusedInput("Content", v.content.View(), v.focus == retainFocusContent),
-		renderFocusedInput("Context", v.context.View(), v.focus == retainFocusContext),
-		renderFocusedInput("Tags", v.tags.View(), v.focus == retainFocusTags),
+		r("Bank", v.bank.View(), v.focus == retainFocusBank),
+		r("Content", v.content.View(), v.focus == retainFocusContent),
+		r("Context", v.context.View(), v.focus == retainFocusContext),
+		r("Tags", v.tags.View(), v.focus == retainFocusTags),
 	}
 	if v.showAdvanced {
 		body = append(body,
-			renderFocusedInput("Document ID", v.documentID.View(), v.focus == retainFocusDocumentID),
-			renderFocusedInput("Timestamp", v.timestamp.View(), v.focus == retainFocusTimestamp),
-			renderFocusedInput("Update mode", v.updateMode.View(), v.focus == retainFocusUpdateMode),
-			renderFocusedInput("Metadata", v.metadata.View(), v.focus == retainFocusMetadata),
-			renderFocusedInput("Async", boolField(v.async), v.focus == retainFocusAsync),
+			r("Document ID", v.documentID.View(), v.focus == retainFocusDocumentID),
+			r("Timestamp", v.timestamp.View(), v.focus == retainFocusTimestamp),
+			r("Update mode", v.updateMode.View(), v.focus == retainFocusUpdateMode),
+			r("Metadata", v.metadata.View(), v.focus == retainFocusMetadata),
+			r("Async", boolField(v.async), v.focus == retainFocusAsync),
 		)
 	} else {
-		body = append(body, "Advanced fields hidden. Press a to edit metadata, timestamp, update mode, and async.")
+		body = append(body, p.Muted.Render("Advanced fields hidden. Press a to edit metadata, timestamp, update mode, and async."))
 	}
 	if v.loading {
-		body = append(body, "", v.spin.View()+" Retaining memory…")
+		body = append(body, "", p.Spinner.Render(v.spin.View())+" Retaining memory…")
 	}
 	if v.status != "" {
 		body = append(body, "", v.status)
@@ -199,9 +202,9 @@ func (v *RetainView) View(width, height int) string {
 		body = append(body, "", renderFriendlyError(v.err))
 	}
 	if v.response != nil && len(v.response.OperationIDs) > 0 {
-		body = append(body, "", renderFocusedInput("View Operations", "enter", v.focus == retainFocusViewOps))
+		body = append(body, "", r("View Operations", p.Primary.Render("enter"), v.focus == retainFocusViewOps))
 	}
-	return ui.Panel("Retain", strings.Join(body, "\n\n"), width)
+	return p.Panel("Retain", strings.Join(body, "\n\n"), width)
 }
 
 func (v *RetainView) moveFocus(delta int) tea.Cmd {
@@ -410,12 +413,11 @@ func optionalString(value string) *string {
 	return &copy
 }
 
-func renderFocusedInput(label, body string, focused bool) string {
-	prefix := "  "
+func renderFocusedInput(p theme.Palette, label, body string, focused bool) string {
 	if focused {
-		prefix = "> "
+		return ui.Lines(p.FocusedLabel.Render("▸ ")+p.FocusedLabel.Render(label), body)
 	}
-	return ui.Lines(prefix+label, body)
+	return ui.Lines(p.FormLabel.Render("  "+label), body)
 }
 
 func boolField(value bool) string {

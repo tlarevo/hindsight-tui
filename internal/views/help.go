@@ -10,7 +10,6 @@ import (
 
 	"hindsight-tui/internal/config"
 	ownkeymap "hindsight-tui/internal/keymap"
-	"hindsight-tui/internal/ui"
 )
 
 type HelpView struct {
@@ -38,6 +37,7 @@ func (v *HelpView) View(width, height int) string {
 	v.help.SetWidth(width)
 	backend := "embed"
 	keys := ownkeymap.Default()
+	p := v.shared.Palette
 	if v.shared != nil {
 		keys = v.shared.KeyMap
 		if v.shared.Config != nil && v.shared.Config.Backend != "" {
@@ -45,26 +45,34 @@ func (v *HelpView) View(width, height int) string {
 		}
 	}
 	sections := []string{
-		ui.Panel("Core concepts", strings.Join([]string{
-			"Retain stores new memories in the active bank.",
-			"Recall searches grounded facts and returns ranked memory results.",
-			"Reflect asks Hindsight to answer with evidence from stored memories.",
-			"Banks partition memory by project, team, or workflow.",
-			"Async retain can index after the write returns; check Operations or retry recall after a short delay.",
-			fmt.Sprintf("Backend mode: embed runs the local hindsight-embed daemon; http talks to an already-running Hindsight API; current default is %s.", backendLabel(config.Backend(backend))),
+		p.Panel("Navigation", strings.Join([]string{
+			p.Primary.Render("Sidebar") + " is the primary navigation. It's focused when you switch routes.",
+			"Use ↑/↓ to move between routes, Enter to switch. Shift+Tab or Esc to leave sidebar.",
+			p.Primary.Render("Tab") + " cycles focus between panes within a view.",
+			p.Primary.Render("Enter") + " selects or activates the focused element.",
+			p.Primary.Render("Esc") + " unfocuses the sidebar, or cancels text entry.",
+			p.Primary.Render("?") + " opens this help screen. " + p.Primary.Render("q") + " goes back.",
 		}, "\n"), width),
-		ui.Panel("Global keybindings", strings.Join(globalBindingLines(keys), "\n"), width),
-		ui.Panel("Help bubble", v.help.FullHelpView(keys.FullHelp()), width),
-		ui.Panel("Bootstrap commands", strings.Join([]string{
-			"uvx hindsight-embed@latest configure",
-			"pipx install hindsight-embed",
-			"hindsight-embed configure",
-			"pip install hindsight-api",
-			"hindsight-api",
-			"npx @vectorize-io/hindsight-control-plane --api-url http://localhost:8888",
+		p.Panel("Core concepts", strings.Join([]string{
+			p.Primary.Render("Retain") + " stores new memories in the active bank.",
+			p.Primary.Render("Recall") + " searches grounded facts and returns ranked memory results.",
+			p.Primary.Render("Reflect") + " asks Hindsight to answer with evidence from stored memories.",
+			p.Primary.Render("Banks") + " partition memory by project, team, or workflow.",
+			p.Muted.Render("Async retain can index after the write returns; check Operations or retry recall after a short delay."),
+			fmt.Sprintf("Backend mode: %s.", backendLabel(config.Backend(backend))),
 		}, "\n"), width),
-		ui.Panel("Troubleshooting", strings.Join([]string{
-			"If embed will not start, confirm HINDSIGHT_EMBED_LLM_API_KEY is set.",
+		p.Panel("Global keybindings", strings.Join(globalBindingLines(keys), "\n"), width),
+		p.Panel("Help bubble", v.help.FullHelpView(keys.FullHelp()), width),
+		p.Panel("Bootstrap commands", strings.Join([]string{
+			p.Code.Render("uvx hindsight-embed@latest configure"),
+			p.Code.Render("pipx install hindsight-embed"),
+			p.Code.Render("hindsight-embed configure"),
+			p.Code.Render("pip install hindsight-api"),
+			p.Code.Render("hindsight-api"),
+			p.Code.Render("npx @vectorize-io/hindsight-control-plane --api-url http://localhost:8888"),
+		}, "\n"), width),
+		p.Panel("Troubleshooting", strings.Join([]string{
+			"If embed will not start, confirm " + p.Code.Render("HINDSIGHT_EMBED_LLM_API_KEY") + " is set.",
 			"If the daemon reports bind failures, check for a port 8888 conflict.",
 			"If startup or indexing fails early, verify ~/.hindsight/ permissions.",
 			"If recall is empty right after async retain, wait for indexing or inspect Operations.",
@@ -94,9 +102,6 @@ func globalBindingLines(keys ownkeymap.KeyMap) []string {
 		keys.Help,
 		keys.Refresh,
 		keys.Save,
-		keys.Banks,
-		keys.Recall,
-		keys.Retain,
 		keys.Reflect,
 		keys.Advanced,
 		keys.Copy,

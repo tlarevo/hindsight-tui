@@ -5,11 +5,13 @@ import (
 	stderrors "errors"
 	"fmt"
 	"net/http"
+	"os"
 	stdexec "os/exec"
 	"strings"
 	"sync"
 	"time"
 
+	"hindsight-tui/internal/config"
 	"hindsight-tui/internal/process"
 )
 
@@ -140,10 +142,15 @@ func (m *EmbedManager) run(ctx context.Context, args ...string) ([]byte, error) 
 }
 
 func (m *EmbedManager) commandOrDefault() string {
-	if m == nil || strings.TrimSpace(m.Command) == "" {
-		return defaultEmbedCommand
+	if m != nil && strings.TrimSpace(m.Command) != "" {
+		return m.Command
 	}
-	return m.Command
+	if managed, err := config.ManagedExecutablePath(defaultEmbedCommand); err == nil {
+		if info, statErr := os.Stat(managed); statErr == nil && !info.IsDir() {
+			return managed
+		}
+	}
+	return defaultEmbedCommand
 }
 
 func (m *EmbedManager) apiURLOrDefault() string {

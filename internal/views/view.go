@@ -10,6 +10,7 @@ import (
 	"hindsight-tui/internal/hindsight"
 	"hindsight-tui/internal/keymap"
 	"hindsight-tui/internal/state"
+	"hindsight-tui/internal/theme"
 )
 
 // moveFocusIn returns the focus value delta steps from current within order,
@@ -59,6 +60,7 @@ type Shared struct {
 	Version *domain.VersionInfo
 	Health  *domain.HealthStatus
 	KeyMap  keymap.KeyMap
+	Palette theme.Palette
 }
 
 type NavigateMsg struct {

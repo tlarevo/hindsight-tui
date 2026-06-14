@@ -15,6 +15,7 @@ import (
 
 	"hindsight-tui/internal/domain"
 	"hindsight-tui/internal/hindsight"
+	"hindsight-tui/internal/theme"
 	"hindsight-tui/internal/ui"
 )
 
@@ -130,10 +131,10 @@ func (v *ExplorerView) Update(msg tea.Msg) (View, tea.Cmd) {
 		case key.Matches(msg, v.shared.KeyMap.Copy) && v.usesTable():
 			v.notice = "Copied JSON to clipboard"
 			return v, tea.SetClipboard(v.selectedJSON())
-		case msg.String() == "left", msg.String() == "h":
+		case msg.String() == "left":
 			v.prevTab()
 			return v, tea.Batch(v.pt.FocusTable(), v.loadCurrentTabCmd())
-		case msg.String() == "right", msg.String() == "l":
+		case msg.String() == "right":
 			v.nextTab()
 			return v, tea.Batch(v.pt.FocusTable(), v.loadCurrentTabCmd())
 		case msg.String() == "[":
@@ -156,47 +157,51 @@ func (v *ExplorerView) Update(msg tea.Msg) (View, tea.Cmd) {
 	}
 	return v, nil
 }
-
 func (v *ExplorerView) View(width, height int) string {
 	if width <= 0 || height <= 0 {
 		return ""
 	}
+	p := v.shared.Palette
 
-	tabs := renderTabs(width, int(v.tab), []string{"Facts", "Entities", "Relationships", "Documents", "Tags"})
+	tabs := renderTabs(p, width, int(v.tab), []string{"Facts", "Entities", "Relationships", "Documents", "Tags"})
 	filters := v.renderFilters(width)
-	status := fmt.Sprintf("Bank: %s | %s | %s", currentViewBank(v.shared), explorerTabLabel(v.tab), v.pt.StatusLine())
+	status := p.StatusLabel("Bank", currentViewBank(v.shared), "neutral") + p.Muted.Render(" │ ") +
+		p.StatusLabel("Tab", explorerTabLabel(v.tab), "neutral") + p.Muted.Render(" │ ") +
+		p.Muted.Render(v.pt.StatusLine())
 	if v.pt.loading {
-		status = fmt.Sprintf("Bank: %s | %s | %s", currentViewBank(v.shared), explorerTabLabel(v.tab), v.pt.LoadingView())
+		status = p.StatusLabel("Bank", currentViewBank(v.shared), "neutral") + p.Muted.Render(" │ ") +
+			p.StatusLabel("Tab", explorerTabLabel(v.tab), "neutral") + p.Muted.Render(" │ ") +
+			p.Spinner.Render(v.pt.LoadingView())
 	}
 	if v.notice != "" {
-		status += " | " + v.notice
+		status += p.Muted.Render(" │ ") + p.Warning.Render(v.notice)
 	}
 
 	contentWidth := max(20, width-2)
 	leftWidth := max(20, contentWidth/2)
 	rightWidth := contentWidth - leftWidth
 	bodyHeight := max(4, height-8)
-	v.pt.detail.SetWidth(max(10, rightWidth-2))
+	v.pt.detail.SetWidth(max(10, rightWidth-4))
 	v.pt.detail.SetHeight(bodyHeight)
 
 	var content string
 	if v.usesTable() {
-		v.pt.table.SetWidth(leftWidth - 2)
+		v.pt.table.SetWidth(leftWidth - 4)
 		v.pt.table.SetHeight(bodyHeight)
-		v.pt.table.SetColumns(explorerColumns(v.tab, leftWidth-2))
+		v.pt.table.SetColumns(explorerColumns(v.tab, leftWidth-4))
 		leftBody := v.pt.table.View()
 		if v.pt.rowCount() == 0 && v.notice == "" && v.err == nil && !v.pt.loading {
-			leftBody = "No rows."
+			leftBody = p.Muted.Render("No rows.")
 		}
 		if v.notice != "" {
-			leftBody = v.notice
+			leftBody = p.Warning.Render(v.notice)
 		}
 		if v.err != nil {
 			leftBody = renderFriendlyError(v.err)
 		}
 		content = ui.TwoColumn(
-			ui.Panel(explorerTabLabel(v.tab), leftBody, leftWidth),
-			ui.Panel("Detail", v.pt.detail.View(), rightWidth),
+			p.Panel(explorerTabLabel(v.tab), leftBody, leftWidth),
+			p.Panel("Detail", v.pt.detail.View(), rightWidth),
 			contentWidth,
 		)
 	} else {
@@ -204,16 +209,16 @@ func (v *ExplorerView) View(width, height int) string {
 		if v.err != nil {
 			body = renderFriendlyError(v.err)
 		} else if v.notice != "" {
-			body = v.notice
+			body = p.Warning.Render(v.notice)
 		}
 		content = ui.TwoColumn(
-			ui.Panel("Relationships", body, leftWidth),
-			ui.Panel("Graph JSON", v.pt.detail.View(), rightWidth),
+			p.Panel("Relationships", body, leftWidth),
+			p.Panel("Graph JSON", v.pt.detail.View(), rightWidth),
 			contentWidth,
 		)
 	}
 
-	footer := "left/right switch tab • [ ] page • / filter • tab pane • c copy • enter apply • ctrl+r refresh"
+	footer := p.Footer.Render("left/right tab • [ ] page • / filter • tab pane • c copy • enter apply • ctrl+r refresh")
 	return ui.Lines(tabs, filters, status, content, footer)
 }
 
@@ -226,13 +231,14 @@ func (v *ExplorerView) TextEntryFocused() bool {
 }
 
 func (v *ExplorerView) renderFilters(width int) string {
-	parts := []string{focusedInputView("/ search", v.pt.inputs[0].input, v.pt.focus == 0)}
+	p := v.shared.Palette
+	parts := []string{focusedInputView(p, "/ search", v.pt.inputs[0].input, v.pt.focus == 0)}
 	switch v.tab {
 	case explorerFacts, explorerRelationships:
-		parts = append(parts, focusedInputView("memory type", v.pt.inputs[1].input, v.pt.focus == 1))
+		parts = append(parts, focusedInputView(p, "memory type", v.pt.inputs[1].input, v.pt.focus == 1))
 	}
 	if v.tab == explorerDocuments || v.tab == explorerRelationships {
-		parts = append(parts, focusedInputView("tags", v.pt.inputs[2].input, v.pt.focus == 2))
+		parts = append(parts, focusedInputView(p, "tags", v.pt.inputs[2].input, v.pt.focus == 2))
 	}
 	line := strings.Join(parts, "  ")
 	return gloss.NewStyle().Width(width).Render(line)
@@ -424,26 +430,24 @@ func newViewTable() table.Model {
 	return model
 }
 
-func focusedInputView(label string, input textinput.Model, focused bool) string {
-	style := gloss.NewStyle().Padding(0, 1)
+func focusedInputView(p theme.Palette, label string, input textinput.Model, focused bool) string {
 	if focused {
-		style = style.Border(gloss.RoundedBorder())
+		style := gloss.NewStyle().Padding(0, 1).Border(gloss.RoundedBorder()).BorderForeground(p.FocusedBorderColor)
+		return style.Render(p.FocusedLabel.Render(label) + " " + input.View())
 	}
-	return style.Render(label + " " + input.View())
+	return p.Muted.Render(label) + " " + input.View()
 }
 
-func renderTabs(width int, active int, labels []string) string {
+func renderTabs(p theme.Palette, width int, active int, labels []string) string {
 	parts := make([]string, 0, len(labels))
-	selected := gloss.NewStyle().Bold(true).Underline(true)
-	plain := gloss.NewStyle().Faint(true)
 	for i, label := range labels {
 		if i == active {
-			parts = append(parts, selected.Render(label))
+			parts = append(parts, p.TabActive.Render(label))
 			continue
 		}
-		parts = append(parts, plain.Render(label))
+		parts = append(parts, p.TabInactive.Render(label))
 	}
-	return gloss.NewStyle().Width(width).Render(strings.Join(parts, "  "))
+	return gloss.NewStyle().Width(width).Render(strings.Join(parts, " "))
 }
 
 func currentViewBank(shared *Shared) string {

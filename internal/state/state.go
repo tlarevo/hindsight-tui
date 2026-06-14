@@ -15,10 +15,12 @@ const (
 	RouteTraces
 	RouteConfig
 	RouteHelp
+	RouteSetup
 )
 
 type AppState struct {
 	ActiveBank  string
 	Backend     config.Backend
 	CurrentView Route
+	SetupActive bool
 }

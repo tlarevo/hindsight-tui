@@ -180,43 +180,44 @@ func (v *TracesView) View(width, height int) string {
 	if width <= 0 || height <= 0 {
 		return ""
 	}
+	p := v.shared.Palette
 
-	status := fmt.Sprintf("Bank: %s | %s", currentViewBank(v.shared), v.pt.StatusLine())
+	status := p.StatusLabel("Bank", currentViewBank(v.shared), "neutral") + p.Muted.Render(" │ ") + p.Muted.Render(v.pt.StatusLine())
 	if v.pt.loading {
-		status = fmt.Sprintf("Bank: %s | %s", currentViewBank(v.shared), v.pt.LoadingView())
+		status = p.StatusLabel("Bank", currentViewBank(v.shared), "neutral") + p.Muted.Render(" │ ") + p.Spinner.Render(v.pt.LoadingView())
 	}
 	if v.notice != "" {
-		status += " | " + v.notice
+		status += p.Muted.Render(" │ ") + p.Warning.Render(v.notice)
 	}
 
 	contentWidth := max(20, width-2)
 	leftWidth := max(20, contentWidth/2)
 	rightWidth := contentWidth - leftWidth
 	bodyHeight := max(4, height-10)
-	v.pt.table.SetWidth(leftWidth - 2)
+	v.pt.table.SetWidth(leftWidth - 4)
 	v.pt.table.SetHeight(bodyHeight)
 	v.pt.table.SetColumns(tracesColumns(v.tab))
-	v.pt.detail.SetWidth(max(10, rightWidth-2))
+	v.pt.detail.SetWidth(max(10, rightWidth-4))
 	v.pt.detail.SetHeight(bodyHeight)
 
 	leftBody := v.pt.table.View()
 	if v.pt.rowCount() == 0 && v.err == nil && v.notice == "" && !v.pt.loading {
-		leftBody = "No rows."
+		leftBody = p.Muted.Render("No rows.")
 	}
 	if v.err != nil {
 		leftBody = renderFriendlyError(v.err)
 	}
 	if v.notice != "" {
-		leftBody = v.notice
+		leftBody = p.Warning.Render(v.notice)
 	}
 
 	content := ui.TwoColumn(
-		ui.Panel(traceTabLabel(v.tab), leftBody, leftWidth),
-		ui.Panel("Detail", v.pt.detail.View(), rightWidth),
+		p.Panel(traceTabLabel(v.tab), leftBody, leftWidth),
+		p.Panel("Detail", v.pt.detail.View(), rightWidth),
 		contentWidth,
 	)
-	footer := "left/right switch tab • [ ] page • / filter • tab pane • c copy • enter apply • ctrl+r refresh"
-	return ui.Lines(renderTabs(width, int(v.tab), []string{"Audit Logs", "LLM Requests"}), v.renderFilters(width), status, content, footer)
+	footer := p.Footer.Render("left/right tab • [ ] page • / filter • tab pane • c copy • enter apply • ctrl+r refresh")
+	return ui.Lines(renderTabs(p, width, int(v.tab), []string{"Audit Logs", "LLM Requests"}), v.renderFilters(width), status, content, footer)
 }
 
 func (v *TracesView) Title() string {
@@ -228,9 +229,10 @@ func (v *TracesView) TextEntryFocused() bool {
 }
 
 func (v *TracesView) renderFilters(width int) string {
+	p := v.shared.Palette
 	parts := make([]string, 0, len(v.pt.inputs))
 	for i := range v.pt.inputs {
-		parts = append(parts, focusedInputView(v.pt.inputs[i].name, v.pt.inputs[i].input, v.pt.focus == i))
+		parts = append(parts, focusedInputView(p, v.pt.inputs[i].name, v.pt.inputs[i].input, v.pt.focus == i))
 	}
 	return strings.Join(parts, "  ")
 }

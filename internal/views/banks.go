@@ -704,6 +704,7 @@ func (v *BanksView) View(width, height int) string {
 	if width <= 0 || height <= 0 {
 		return ""
 	}
+	p := v.shared.Palette
 	formLines := make([]string, 0, len(v.fields)+3)
 	for i, field := range v.fields {
 		focused := v.pane == banksPaneForm && i == v.fieldIndex
@@ -711,21 +712,21 @@ func (v *BanksView) View(width, height int) string {
 		if focused && v.editor.active {
 			value = v.editor.View()
 		}
-		formLines = append(formLines, renderField(field.label, value, focused))
+		formLines = append(formLines, renderField(p, field.label, value, focused))
 	}
 	if v.shared.Version == nil || !v.shared.Version.Features.Observations {
-		formLines = append(formLines, "", "enable_observations is ignored until the server reports observations support.")
+		formLines = append(formLines, "", p.Muted.Render("enable_observations is ignored until the server reports observations support."))
 	}
 	if v.loading {
-		formLines = append(formLines, "", "Working...")
+		formLines = append(formLines, "", p.Spinner.Render("⟳")+" Working...")
 	}
-	left := renderMenu("Banks", v.bankItems, v.bankIndex, v.pane == banksPaneList)
+	left := renderMenu(p, "Banks", v.bankItems, v.bankIndex, v.pane == banksPaneList)
 	right := ui.Lines(
-		ui.Panel("Selected bank", v.detailBody(), 0),
-		ui.Panel("Create / edit", strings.Join(formLines, "\n"), 0),
-		renderMenu("Actions", v.actions, v.actionIndex, v.pane == banksPaneActions),
-		ui.Panel("Output", clippedLines(v.outputText(), v.outputOffset, max(height/4, 6)), 0),
+		p.Panel("Selected bank", v.detailBody(), 0),
+		p.Panel("Create / edit", strings.Join(formLines, "\n"), 0),
+		renderMenu(p, "Actions", v.actions, v.actionIndex, v.pane == banksPaneActions),
+		p.Panel("Output", clippedLines(v.outputText(), v.outputOffset, max(height/4, 6)), 0),
 	)
-	footer := fmt.Sprintf("selected=%s active=%s pane=%d | enter edit field · esc cancel", blankFallback(v.selectedBank, "none"), blankFallback(v.shared.State.ActiveBank, v.shared.Config.DefaultBank), v.pane)
-	return ui.Lines("Banks", ui.TwoColumn(left, right, max(width-2, 20)), footer)
+	footer := p.Footer.Render(fmt.Sprintf("selected=%s active=%s | enter edit · esc cancel", blankFallback(v.selectedBank, "none"), blankFallback(v.shared.State.ActiveBank, v.shared.Config.DefaultBank)))
+	return ui.Lines(p.Primary.Render("Banks"), ui.TwoColumn(left, right, max(width-2, 20)), footer)
 }
