@@ -5,11 +5,11 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"hindsight-tui/internal/config"
-	"hindsight-tui/internal/domain"
-	"hindsight-tui/internal/hindsight"
-	appkeymap "hindsight-tui/internal/keymap"
-	"hindsight-tui/internal/state"
+	"github.com/tlarevo/hindsight-tui/internal/config"
+	"github.com/tlarevo/hindsight-tui/internal/domain"
+	"github.com/tlarevo/hindsight-tui/internal/hindsight"
+	appkeymap "github.com/tlarevo/hindsight-tui/internal/keymap"
+	"github.com/tlarevo/hindsight-tui/internal/state"
 )
 
 func newTestShared() *Shared {

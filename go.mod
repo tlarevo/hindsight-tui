@@ -1,4 +1,4 @@
-module hindsight-tui
+module github.com/tlarevo/hindsight-tui
 
 go 1.26.3
 

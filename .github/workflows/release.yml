@@ -1,0 +1,37 @@
+name: Release
+on:
+  push:
+    tags: ['v*']
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+      - run: go build ./...
+      - run: go test -race ./...
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update Homebrew tap
+        if: ${{ env.HOMEBREW_TAP_GITHUB_TOKEN != '' }}
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          TARBALL_URL="https://github.com/${{ github.repository }}/archive/refs/tags/${GITHUB_REF_NAME}.tar.gz"
+          SHA=$(curl -fsSL "$TARBALL_URL" | sha256sum | cut -d' ' -f1)
+          git clone https://x-access-token:${HOMEBREW_TAP_GITHUB_TOKEN}@github.com/tlarevo/homebrew-tap.git /tmp/tap
+          cd /tmp/tap
+          sed -i "s|url \".*\"|url \"$TARBALL_URL\"|" Formula/hindsight-tui.rb
+          sed -i "s|sha256 \".*\"|sha256 \"$SHA\"|" Formula/hindsight-tui.rb
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet || git commit -m "hindsight-tui ${VERSION}"
+          git push

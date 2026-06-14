@@ -11,10 +11,10 @@ import (
 	"charm.land/bubbles/v2/textinput"
 	tea "charm.land/bubbletea/v2"
 
-	"hindsight-tui/internal/domain"
-	"hindsight-tui/internal/state"
-	"hindsight-tui/internal/theme"
-	"hindsight-tui/internal/ui"
+	"github.com/tlarevo/hindsight-tui/internal/domain"
+	"github.com/tlarevo/hindsight-tui/internal/state"
+	"github.com/tlarevo/hindsight-tui/internal/theme"
+	"github.com/tlarevo/hindsight-tui/internal/ui"
 )
 
 const (

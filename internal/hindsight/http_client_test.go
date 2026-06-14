@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"hindsight-tui/internal/domain"
+	"github.com/tlarevo/hindsight-tui/internal/domain"
 )
 
 var _ Client = (*HTTPClient)(nil)

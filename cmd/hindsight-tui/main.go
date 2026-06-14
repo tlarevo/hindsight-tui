@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"hindsight-tui/internal/cli"
+	"github.com/tlarevo/hindsight-tui/internal/cli"
 )
 
 func main() {

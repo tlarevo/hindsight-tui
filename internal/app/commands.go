@@ -6,8 +6,8 @@ import (
 	"os"
 	"strings"
 
-	"hindsight-tui/internal/config"
-	"hindsight-tui/internal/hindsight"
+	"github.com/tlarevo/hindsight-tui/internal/config"
+	"github.com/tlarevo/hindsight-tui/internal/hindsight"
 )
 
 func loadConfigForRun(opts Options) (config.Config, error) {

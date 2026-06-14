@@ -1,6 +1,6 @@
 package app
 
-import "hindsight-tui/internal/state"
+import "github.com/tlarevo/hindsight-tui/internal/state"
 
 type routeEntry struct {
 	Route state.Route

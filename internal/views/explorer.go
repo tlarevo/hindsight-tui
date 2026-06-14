@@ -13,10 +13,10 @@ import (
 	tea "charm.land/bubbletea/v2"
 	gloss "charm.land/lipgloss/v2"
 
-	"hindsight-tui/internal/domain"
-	"hindsight-tui/internal/hindsight"
-	"hindsight-tui/internal/theme"
-	"hindsight-tui/internal/ui"
+	"github.com/tlarevo/hindsight-tui/internal/domain"
+	"github.com/tlarevo/hindsight-tui/internal/hindsight"
+	"github.com/tlarevo/hindsight-tui/internal/theme"
+	"github.com/tlarevo/hindsight-tui/internal/ui"
 )
 
 type explorerTab int

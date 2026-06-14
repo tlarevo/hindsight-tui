@@ -6,10 +6,10 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"hindsight-tui/internal/config"
-	"hindsight-tui/internal/hindsight"
-	"hindsight-tui/internal/state"
-	appviews "hindsight-tui/internal/views"
+	"github.com/tlarevo/hindsight-tui/internal/config"
+	"github.com/tlarevo/hindsight-tui/internal/hindsight"
+	"github.com/tlarevo/hindsight-tui/internal/state"
+	appviews "github.com/tlarevo/hindsight-tui/internal/views"
 )
 
 func demoModel() Model {

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"hindsight-tui/internal/config"
+	"github.com/tlarevo/hindsight-tui/internal/config"
 )
 
 func TestParseBackend(t *testing.T) {

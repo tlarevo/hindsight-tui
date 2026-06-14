@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"hindsight-tui/internal/domain"
+	"github.com/tlarevo/hindsight-tui/internal/domain"
 )
 
 type DemoClient struct {

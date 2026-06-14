@@ -1,5 +1,9 @@
 # hindsight-tui
 
+[![CI](https://github.com/tlarevo/hindsight-tui/actions/workflows/ci.yml/badge.svg)](https://github.com/tlarevo/hindsight-tui/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Release](https://img.shields.io/github/v/release/tlarevo/hindsight-tui)](https://github.com/tlarevo/hindsight-tui/releases/latest)
+
 `hindsight-tui` is a local-first terminal UI for Hindsight.
 
 It exposes Hindsight as memory banks, retain, recall, reflect, explorer, operations, traces, and configuration instead of raw REST calls or CLI plumbing.

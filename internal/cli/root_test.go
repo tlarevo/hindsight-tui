@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"hindsight-tui/internal/app"
+	"github.com/tlarevo/hindsight-tui/internal/app"
 )
 
 func TestFlagsMapToOptions(t *testing.T) {

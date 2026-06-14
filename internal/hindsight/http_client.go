@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"hindsight-tui/internal/domain"
+	"github.com/tlarevo/hindsight-tui/internal/domain"
 )
 
 const (

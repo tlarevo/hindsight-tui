@@ -7,8 +7,8 @@ import (
 	"net"
 	"strings"
 
-	appconfig "hindsight-tui/internal/config"
-	"hindsight-tui/internal/hindsight"
+	appconfig "github.com/tlarevo/hindsight-tui/internal/config"
+	"github.com/tlarevo/hindsight-tui/internal/hindsight"
 )
 
 type UserError struct {

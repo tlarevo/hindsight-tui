@@ -3,7 +3,7 @@ package views
 import (
 	"testing"
 
-	"hindsight-tui/internal/domain"
+	"github.com/tlarevo/hindsight-tui/internal/domain"
 )
 
 func TestTracesViewSkipsEndpointsWhenFeaturesDisabled(t *testing.T) {

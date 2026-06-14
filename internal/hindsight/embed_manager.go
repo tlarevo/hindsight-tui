@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"hindsight-tui/internal/config"
-	"hindsight-tui/internal/process"
+	"github.com/tlarevo/hindsight-tui/internal/config"
+	"github.com/tlarevo/hindsight-tui/internal/process"
 )
 
 const (

@@ -17,10 +17,10 @@ import (
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 
-	"hindsight-tui/internal/config"
-	"hindsight-tui/internal/hindsight"
-	"hindsight-tui/internal/state"
-	"hindsight-tui/internal/theme"
+	"github.com/tlarevo/hindsight-tui/internal/config"
+	"github.com/tlarevo/hindsight-tui/internal/hindsight"
+	"github.com/tlarevo/hindsight-tui/internal/state"
+	"github.com/tlarevo/hindsight-tui/internal/theme"
 )
 
 const managedUVVersion = "0.11.21"

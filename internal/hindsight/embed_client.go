@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"hindsight-tui/internal/domain"
+	"github.com/tlarevo/hindsight-tui/internal/domain"
 )
 
 // ensureTransport guarantees the embed daemon is running before each request is

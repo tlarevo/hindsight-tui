@@ -3,7 +3,7 @@ package cli
 import (
 	"github.com/spf13/cobra"
 
-	"hindsight-tui/internal/app"
+	"github.com/tlarevo/hindsight-tui/internal/app"
 )
 
 var version = "dev"

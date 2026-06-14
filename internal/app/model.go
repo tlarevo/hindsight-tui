@@ -10,13 +10,13 @@ import (
 	tea "charm.land/bubbletea/v2"
 	gloss "charm.land/lipgloss/v2"
 
-	"hindsight-tui/internal/config"
-	"hindsight-tui/internal/domain"
-	"hindsight-tui/internal/hindsight"
-	appkeymap "hindsight-tui/internal/keymap"
-	"hindsight-tui/internal/state"
-	"hindsight-tui/internal/theme"
-	appviews "hindsight-tui/internal/views"
+	"github.com/tlarevo/hindsight-tui/internal/config"
+	"github.com/tlarevo/hindsight-tui/internal/domain"
+	"github.com/tlarevo/hindsight-tui/internal/hindsight"
+	appkeymap "github.com/tlarevo/hindsight-tui/internal/keymap"
+	"github.com/tlarevo/hindsight-tui/internal/state"
+	"github.com/tlarevo/hindsight-tui/internal/theme"
+	appviews "github.com/tlarevo/hindsight-tui/internal/views"
 )
 
 type Options struct {

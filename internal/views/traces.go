@@ -10,9 +10,9 @@ import (
 	"charm.land/bubbles/v2/table"
 	tea "charm.land/bubbletea/v2"
 
-	"hindsight-tui/internal/domain"
-	"hindsight-tui/internal/hindsight"
-	"hindsight-tui/internal/ui"
+	"github.com/tlarevo/hindsight-tui/internal/domain"
+	"github.com/tlarevo/hindsight-tui/internal/hindsight"
+	"github.com/tlarevo/hindsight-tui/internal/ui"
 )
 
 type tracesTab int

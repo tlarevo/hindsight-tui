@@ -12,10 +12,10 @@ import (
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 
-	"hindsight-tui/internal/domain"
-	apperrors "hindsight-tui/internal/errors"
-	"hindsight-tui/internal/hindsight"
-	"hindsight-tui/internal/ui"
+	"github.com/tlarevo/hindsight-tui/internal/domain"
+	apperrors "github.com/tlarevo/hindsight-tui/internal/errors"
+	"github.com/tlarevo/hindsight-tui/internal/hindsight"
+	"github.com/tlarevo/hindsight-tui/internal/ui"
 )
 
 const (

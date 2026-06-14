@@ -1,6 +1,6 @@
 package state
 
-import "hindsight-tui/internal/config"
+import "github.com/tlarevo/hindsight-tui/internal/config"
 
 type Route int
 

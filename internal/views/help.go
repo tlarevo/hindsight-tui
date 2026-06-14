@@ -8,8 +8,8 @@ import (
 	"charm.land/bubbles/v2/key"
 	tea "charm.land/bubbletea/v2"
 
-	"hindsight-tui/internal/config"
-	ownkeymap "hindsight-tui/internal/keymap"
+	"github.com/tlarevo/hindsight-tui/internal/config"
+	ownkeymap "github.com/tlarevo/hindsight-tui/internal/keymap"
 )
 
 type HelpView struct {

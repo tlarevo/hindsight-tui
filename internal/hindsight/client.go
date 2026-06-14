@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"hindsight-tui/internal/config"
-	"hindsight-tui/internal/domain"
+	"github.com/tlarevo/hindsight-tui/internal/config"
+	"github.com/tlarevo/hindsight-tui/internal/domain"
 )
 
 type TraceFilters struct {

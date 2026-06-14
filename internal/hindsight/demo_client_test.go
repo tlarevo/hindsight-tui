@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"hindsight-tui/internal/domain"
+	"github.com/tlarevo/hindsight-tui/internal/domain"
 )
 func boolPtr(v bool) *bool { return &v }
 

@@ -5,8 +5,8 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"hindsight-tui/internal/state"
-	appviews "hindsight-tui/internal/views"
+	"github.com/tlarevo/hindsight-tui/internal/state"
+	appviews "github.com/tlarevo/hindsight-tui/internal/views"
 )
 
 // TestSmokeRendersEveryRoute drives the demo model through a window resize and

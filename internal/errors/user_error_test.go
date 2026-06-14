@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"testing"
 
-	"hindsight-tui/internal/hindsight"
+	"github.com/tlarevo/hindsight-tui/internal/hindsight"
 )
 
 func TestFriendlyClassifiesStatusErrors(t *testing.T) {
